@@ -34,7 +34,8 @@ public class ActeurRepositoryTest {
 	 */
 	@Test
 	public void testExtraireActeursParIdentite() {
-		TypedQuery<Acteur> query = em.createQuery("SELECT a FROM Acteur a", Acteur.class);
+		TypedQuery<Acteur> query = em.createQuery("SELECT a FROM Acteur a WHERE a.identite=:actrice", Acteur.class);
+		query.setParameter("actrice", "Marion Cotillard");
 		List<Acteur> acteurs = query.getResultList();
 		
 		assertEquals(1, acteurs.size());
@@ -47,7 +48,8 @@ public class ActeurRepositoryTest {
 	 */
 	@Test
 	public void testExtraireActeursParAnneeNaissance() {
-		TypedQuery<Acteur> query = em.createQuery("SELECT a FROM Acteur a", Acteur.class);
+		TypedQuery<Acteur> query = em.createQuery("SELECT a FROM Acteur a WHERE YEAR(a.anniversaire)=:year", Acteur.class);
+		query.setParameter("year", 1985);
 		List<Acteur> acteurs = query.getResultList();
 		
 		assertEquals(10, acteurs.size());
@@ -59,7 +61,8 @@ public class ActeurRepositoryTest {
 	@Test
 	public void testExtraireActeursParRole() {
 		
-		TypedQuery<Acteur> query = em.createQuery("SELECT a FROM Acteur a", Acteur.class);
+		TypedQuery<Acteur> query = em.createQuery("SELECT a FROM Acteur a JOIN a.roles r WHERE r.nom=:actrice", Acteur.class);
+		query.setParameter("actrice", "Harley QUINN");
 		List<Acteur> acteurs = query.getResultList();
 		
 		assertEquals(2, acteurs.size());
@@ -72,7 +75,8 @@ public class ActeurRepositoryTest {
 	 */
 	@Test
 	public void testExtraireActeursParFilmParuAnnee() {
-		TypedQuery<Acteur> query = em.createQuery("SELECT a FROM Acteur a", Acteur.class);
+		TypedQuery<Acteur> query = em.createQuery("SELECT a FROM Acteur a INNER JOIN a.roles r INNER JOIN r.film f WHERE f.annee =:year", Acteur.class);
+		query.setParameter("year", 2015);
 		List<Acteur> acteurs = query.getResultList();
 		assertEquals(140, acteurs.size());
 	}
@@ -83,18 +87,22 @@ public class ActeurRepositoryTest {
 	 */
 	@Test
 	public void testExtraireActeursParPays() {
-		TypedQuery<Acteur> query = em.createQuery("SELECT a FROM Acteur a", Acteur.class);
+		TypedQuery<Acteur> query = em.createQuery("SELECT DISTINCT a FROM Acteur a JOIN a.roles r JOIN r.film f JOIN f.pays p WHERE p.nom=:pays", Acteur.class);
+		query.setParameter("pays", "France");
 		List<Acteur> acteurs = query.getResultList();
 		assertEquals(158, acteurs.size());
 	}
 	
 	/**
 	 * Extraire la liste de tous les acteurs ayant joué dans un film français paru en 2017
+
 	 * Astuce: mot clé distinct
 	 */
 	@Test
 	public void testExtraireActeursParListePaysEtAnnee() {
-		TypedQuery<Acteur> query = em.createQuery("SELECT a FROM Acteur a", Acteur.class);
+		TypedQuery<Acteur> query = em.createQuery("SELECT DISTINCT a FROM Acteur a JOIN a.roles r JOIN r.film f JOIN f.pays p WHERE p.nom=:pays and f.annee=:year", Acteur.class);
+		query.setParameter("pays", "France");
+		query.setParameter("year", 2017);
 		List<Acteur> acteurs = query.getResultList();
 		assertEquals(24, acteurs.size());
 	}
@@ -106,7 +114,10 @@ public class ActeurRepositoryTest {
 	 */
 	@Test
 	public void testExtraireParRealisateurEntreAnnee() {
-		TypedQuery<Acteur> query = em.createQuery("SELECT a FROM Acteur a", Acteur.class);
+		TypedQuery<Acteur> query = em.createQuery("SELECT DISTINCT a FROM Acteur a JOIN a.roles ro JOIN ro.film f JOIN f.realisateurs r WHERE (f.annee BETWEEN :year AND :year2) AND r.identite=:realisateur", Acteur.class);
+		query.setParameter("year", 2010);
+		query.setParameter("year2", 2020);
+		query.setParameter("realisateur", "Ridley Scott");
 		List<Acteur> acteurs = query.getResultList();
 		assertEquals(27, acteurs.size());
 	}
